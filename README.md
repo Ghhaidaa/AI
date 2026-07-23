@@ -29,26 +29,29 @@ lakehouse with an incremental upsert, a hybrid-search RAG pipeline, Airflow
 orchestration, and per-stage quality gating and lineage.
 
 ## Pipeline Architecture
-Kafka producer
-│
-▼
-Kafka consumer (topic: books)
-│
-▼
-Pydantic contract validation ──► rejected_books.csv (rejection reason attached)
-│ (valid records only)
-▼
-Bronze (Delta, append-only)
-│
-▼
-Silver (Delta MERGE upsert on book_id)
-│
-├──────────────► Gold (Delta aggregate: books per category/language)
-│
-▼
-Quality Gate (Great Expectations) ──► raises on failure, halting the pipeline
-│
-└──────────────► RAG pipeline
+## Pipeline Architecture
+
+    Kafka producer
+          |
+          v
+    Kafka consumer (topic: books)
+          |
+          v
+    Pydantic contract validation --> rejected_books.csv (rejection reason attached)
+          |
+          | (valid records only)
+          v
+    Bronze (Delta, append-only)
+          |
+          v
+    Silver (Delta MERGE upsert on book_id)
+          |
+          +----------------> Gold (Delta aggregate: books per category/language)
+          |
+          v
+    Quality Gate (Great Expectations) --> raises on failure, halting the pipeline
+          |
+          +----------------> RAG pipeline
 
 Every stage emits OpenLineage START / COMPLETE / FAIL events.
 
@@ -102,12 +105,26 @@ is generated.
 ## 4. Pipeline Orchestration
 
 An Apache Airflow DAG (`sdaia_books_pipeline`, 6 tasks) wires every stage together:
-start
-└─> data_ingestion
-└─> delta_lakehouse
-└─> quality_gate
-└─> rag_pipeline
-└─> end
+## Pipeline Orchestration
+
+An Apache Airflow DAG (`sdaia_books_pipeline`, 6 tasks) wires every stage together:
+
+    start
+      |
+      v
+    data_ingestion
+      |
+      v
+    delta_lakehouse
+      |
+      v
+    quality_gate
+      |
+      v
+    rag_pipeline
+      |
+      v
+    end
 
 `rag_pipeline` and `end` sit downstream of `quality_gate` with Airflow's
 default `all_success` trigger rule, so a failed gate leaves both skipped —
