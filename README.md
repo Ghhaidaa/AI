@@ -1,6 +1,6 @@
 # Data Engineering for AI System-Capstone
 
-Students: Ghaida Bin maadi, Shaden , Reema 
+Students: Ghaida Bin maadi, Shaden , Reema AlDayel
 
 Program: SDAIA Academy — Modern Data Engineering for AI Systems
 
